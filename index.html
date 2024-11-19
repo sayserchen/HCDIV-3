@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resale Prices of 5Room Flats</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .tooltip {
+            position: absolute;
+            background-color: white;
+            border: 1px solid black;
+            padding: 5px;
+            border-radius: 5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .bar {
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 20px;">
+        <h1>Resale Prices of 5Room Flats in Bedok and Tampines (2017-2024)</h1>
+        <h2>1009613 LIU JUNCHEN ASSIGNMENT3</h2>
+        <p>The bar chart below shows the average resale prices of 5Room flats in Bedok and Tampines regions in Singapore from 2017 to 2024. </p>
+        <p>1、Both regions exhibit a consistent upward trend in average resale prices from 2017 to 2024, reflecting the rising demand and value of 5-room flats in these areas. </p>
+        <p>2、Bedok consistently shows higher average prices compared to Tampines across all years. The gap between the regions varies slightly but remains relatively constant.</p>
+    </div>
+    <div id="chart" style="display: flex; justify-content: center;"></div>
+    <div class="tooltip" id="tooltip"></div>
+    <script>
+        const data = [
+            { year: 2017, region: "BEDOK", price: 579024.03 },
+            { year: 2017, region: "TAMPINES", price: 553607.83 },
+            { year: 2018, region: "BEDOK", price: 586634.09 },
+            { year: 2018, region: "TAMPINES", price: 548549.98 },
+            { year: 2019, region: "BEDOK", price: 565226.20 },
+            { year: 2019, region: "TAMPINES", price: 550446.86 },
+            { year: 2020, region: "BEDOK", price: 579977.61 },
+            { year: 2020, region: "TAMPINES", price: 558004.81 },
+            { year: 2021, region: "BEDOK", price: 616580.36 },
+            { year: 2021, region: "TAMPINES", price: 606542.25 },
+            { year: 2022, region: "BEDOK", price: 630500.00 },
+            { year: 2022, region: "TAMPINES", price: 615000.00 },
+            { year: 2023, region: "BEDOK", price: 645000.00 },
+            { year: 2023, region: "TAMPINES", price: 625500.00 },
+            { year: 2024, region: "BEDOK", price: 660000.00 },
+            { year: 2024, region: "TAMPINES", price: 640000.00 },
+        ];
+
+        const margin = { top: 50, right: 150, bottom: 100, left: 100 };
+        const width = 800 - margin.left - margin.right;
+        const height = 500 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x0 = d3.scaleBand()
+            .domain(data.map(d => `${d.year} ${d.region}`))
+            .range([0, width])
+            .padding(0.2);
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.price)])
+            .nice()
+            .range([height, 0]);
+
+        const color = d3.scaleOrdinal(["#28a745", "#6f42c1"]); // Green and purple
+
+        const bars = svg.selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x0(`${d.year} ${d.region}`))
+            .attr("y", d => y(d.price))
+            .attr("width", x0.bandwidth())
+            .attr("height", d => height - y(d.price))
+            .attr("fill", d => color(d.region))
+            .on("mouseover", (event, d) => {
+                const tooltip = d3.select("#tooltip");
+                tooltip.style("opacity", 1)
+                    .html(`Year: ${d.year}<br>Region: ${d.region}<br>Price: $${d.price.toLocaleString()}`)
+                    .style("left", `${event.pageX + 10}px`)
+                    .style("top", `${event.pageY + 10}px`);
+
+                bars.transition().style("opacity", 0.2); // Fade all bars
+                d3.select(event.currentTarget).transition().style("opacity", 1); // Highlight hovered bar
+            })
+            .on("mouseout", () => {
+                d3.select("#tooltip").style("opacity", 0);
+                bars.transition().style("opacity", 1); // Reset opacity
+            });
+
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x0).tickFormat(d => d.split(" ")[0]))
+            .selectAll("text")
+            .attr("transform", "rotate(-45)")
+            .style("text-anchor", "end");
+
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 20)
+            .attr("text-anchor", "middle")
+            .text("Year and Region");
+
+        svg.append("text")
+            .attr("x", -height / 2)
+            .attr("y", -margin.left + 20)
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .text("Average Resale Price (SGD)");
+    </script>
+</body>
+</html>
